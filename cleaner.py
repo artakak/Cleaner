@@ -17,7 +17,6 @@ stop_button = Blynk(auth, pin="V6")
 repeat = Blynk(auth, pin="V9")
 terminal = Blynk(auth, pin="V7")
 
-
 areas = {"V0": [21281, 24865, 24831, 26365, 1],
          "V1": [24850, 24765, 27350, 26165, 1],
          "V2": [24907, 22483, 25707, 25033, 1],
@@ -29,7 +28,6 @@ areas_to_clean = []
 def check_vacuum_status():
     mirobo_cmd = "mirobo status"
     result = subprocess.check_output(mirobo_cmd, shell=True)
-    print result
     return result
 
 while 1:
@@ -50,8 +48,8 @@ while 1:
         else:
             start_button.off()
             terminal.set_val("Cleaning denied")
-            terminal.set_val(status)
             time.sleep(5)
+        terminal.set_val(status.replace("\\", r"\\").replace("\n", r"\n"))
         areas_to_clean = []
     if stop_button.get_val()[0] == "1":
         terminal.set_val(r'Go Home\n')

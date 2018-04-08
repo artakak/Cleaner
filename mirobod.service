@@ -1,0 +1,16 @@
+[Unit]
+Description=MiroboDaemon
+After=network.target 
+
+[Service]
+# Тип запуска
+Type=simple
+# Перезапуск при сбое
+Restart=always
+
+# Запуск приложения
+ExecStart=/usr/bin/python2.7 /home/cleaner/cleaner.py & 
+# Пауза при необходимости
+TimeoutSec=20
+[Install]
+WantedBy=multi-user.target
