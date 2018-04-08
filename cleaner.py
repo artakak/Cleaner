@@ -58,4 +58,5 @@ while 1:
         stop_button.off()
         time.sleep(5)
         terminal.set_val(check_vacuum_status().replace("\\", r"\\").replace("\n", r"\n"))
+    time.sleep(5)
 
