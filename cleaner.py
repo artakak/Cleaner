@@ -32,8 +32,7 @@ def check_vacuum_status():
 
 while 1:
     if start_button.get_val()[0] == "1":
-        status = check_vacuum_status()
-        if "Charging" in status:
+        if "Charging" in check_vacuum_status():
             terminal.set_val(r'\n\nStart cleaning\n')
             for t in areas.keys():
                 button = Blynk(auth, pin=t)
@@ -49,7 +48,7 @@ while 1:
             start_button.off()
             terminal.set_val(r"\n\nCleaning denied\n")
             time.sleep(5)
-        terminal.set_val(status.replace("\\", r"\\").replace("\n", r"\n"))
+        terminal.set_val(check_vacuum_status().replace("\\", r"\\").replace("\n", r"\n"))
         areas_to_clean = []
     if stop_button.get_val()[0] == "1":
         terminal.set_val(r'\n\nGo Home\n')
