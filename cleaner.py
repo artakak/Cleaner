@@ -4,7 +4,6 @@ import os
 import subprocess
 import time
 from Blynk import Blynk
-import re
 
 
 ip = "192.168.1.51"
