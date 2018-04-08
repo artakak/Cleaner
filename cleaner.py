@@ -34,7 +34,7 @@ while 1:
     if start_button.get_val()[0] == "1":
         status = check_vacuum_status()
         if "Charging" in status:
-            terminal.set_val(r'Start cleaning\n')
+            terminal.set_val(r'\n\nStart cleaning\n')
             for t in areas.keys():
                 button = Blynk(auth, pin=t)
                 areas[t][-1] = int(repeat.get_val()[0])
@@ -47,15 +47,16 @@ while 1:
             time.sleep(5)
         else:
             start_button.off()
-            terminal.set_val("Cleaning denied")
+            terminal.set_val(r"\n\nCleaning denied\n")
             time.sleep(5)
         terminal.set_val(status.replace("\\", r"\\").replace("\n", r"\n"))
         areas_to_clean = []
     if stop_button.get_val()[0] == "1":
-        terminal.set_val(r'Go Home\n')
+        terminal.set_val(r'\n\nGo Home\n')
         mirobo_cmd = "mirobo home"
         result = subprocess.check_output(mirobo_cmd, shell=True)
         terminal.set_val(result.replace("\\", r"\\").replace("\n", r"\n"))
         stop_button.off()
         time.sleep(5)
+        terminal.set_val(check_vacuum_status().replace("\\", r"\\").replace("\n", r"\n"))
 
