@@ -25,38 +25,39 @@ areas = {"V0": [21281, 24865, 24831, 26365, 1],
 areas_to_clean = []
 
 
-def check_vacuum_status():
-    mirobo_cmd = "mirobo status"
-    result = subprocess.check_output(mirobo_cmd, shell=True)
-    return result
+def do_robo_cmd(cmd):
+    result = subprocess.check_output(cmd, shell=True)
+    return result.replace("\\", r"\\").replace("\n", r"\n")
+
 
 while 1:
     if start_button.get_val()[0] == "1":
-        if "Charging" in check_vacuum_status():
+        if "Charging" in do_robo_cmd("mirobo status"):
             terminal.set_val(r'\n\nStart cleaning\n')
             for t in areas.keys():
                 button = Blynk(auth, pin=t)
                 areas[t][-1] = int(repeat.get_val()[0])
                 if button.get_val()[0] == "1":
                     areas_to_clean.append(areas[t])
-            mirobo_cmd = "mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean)
-            result = subprocess.check_output(mirobo_cmd, shell=True)
-            terminal.set_val(result.replace("\\", r"\\").replace("\n", r"\n"))
+            result = do_robo_cmd("mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean))
+            terminal.set_val(result)
             start_button.off()
             time.sleep(5)
         else:
             start_button.off()
             terminal.set_val(r"\n\nCleaning denied\n")
             time.sleep(5)
-        terminal.set_val(check_vacuum_status().replace("\\", r"\\").replace("\n", r"\n"))
+        terminal.set_val(do_robo_cmd("mirobo status"))
         areas_to_clean = []
     if stop_button.get_val()[0] == "1":
         terminal.set_val(r'\n\nGo Home\n')
-        mirobo_cmd = "mirobo home"
-        result = subprocess.check_output(mirobo_cmd, shell=True)
-        terminal.set_val(result.replace("\\", r"\\").replace("\n", r"\n"))
+        result = do_robo_cmd("mirobo home")
+        terminal.set_val(result)
         stop_button.off()
         time.sleep(5)
-        terminal.set_val(check_vacuum_status().replace("\\", r"\\").replace("\n", r"\n"))
+        terminal.set_val(do_robo_cmd("mirobo status"))
+    if "Zone" in do_robo_cmd("mirobo status"):
+        current_status = do_robo_cmd("mirobo status")
+        print(current_status)
     time.sleep(5)
 
