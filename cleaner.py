@@ -94,10 +94,8 @@ while 1:
         terminal.set_val(do_robo_cmd("mirobo status"))
     try:
         current_status = do_robo_cmd("mirobo status")
-        print(current_status)
-        asd = "asdsad" + 1
-        print (update_app(current_status))
+        update_app(current_status)
     except Exception, e:
-        terminal.set_val(r"OMG!!!\n"+str(e))
+        terminal.set_val(r"OMG!!!\n{}\n".format(str(e)))
     time.sleep(5)
 
