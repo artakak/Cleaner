@@ -95,6 +95,7 @@ while 1:
         print(current_status)
         print (update_app(current_status))
     except:
+        terminal.set_val(r"Connect problem\n")
         pass
     time.sleep(5)
 
