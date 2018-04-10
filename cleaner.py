@@ -47,6 +47,8 @@ def do_robo_cmd(cmd):
 
 
 def update_app(status):
+    if "Error" in status:
+        return r"ERROR!!!\n" + status
     state = re.findall("State: ([\w\s]+)", status)[0]
     battery = re.findall("Battery: (\d+ %)", status)[0]
     cleaning_duration = re.findall("Cleaning since: (\d:\d\d:\d\d)", status)[0]
@@ -93,9 +95,9 @@ while 1:
     try:
         current_status = do_robo_cmd("mirobo status")
         print(current_status)
+        asd = "asdsad" + 1
         print (update_app(current_status))
-    except:
-        terminal.set_val(r"Connect problem\n")
-        pass
+    except Exception, e:
+        terminal.set_val(r"OMG!!!\n"+str(e))
     time.sleep(5)
 
