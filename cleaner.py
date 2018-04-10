@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 import subprocess
 import time
@@ -33,6 +32,8 @@ terminal = Blynk(auth, pin="V7")
 lcd1 = Blynk(auth, pin="V8")
 lcd2 = Blynk(auth, pin="V10")
 
+power = Blynk(auth, pin="V11")
+
 areas = {"V0": [21281, 24865, 24831, 26365, 1],
          "V1": [24850, 24765, 27350, 26165, 1],
          "V2": [24907, 22483, 25707, 25033, 1],
@@ -52,10 +53,11 @@ def update_app(status):
     state = re.findall("State: ([\w\s]+)", status)[0]
     battery = re.findall("Battery: (\d+ %)", status)[0]
     cleaning_duration = re.findall("Cleaning since: (\d:\d\d:\d\d)", status)[0]
+    fanspeed = re.findall("Fanspeed: (\d+ %)", status)[0]
     lcd1.set_val(state)
     lcd2.set_val(battery)
     if state == "Zoned cleaning":
-        lcd2.set_val(cleaning_duration)
+        lcd2.set_val("%s W:%s" % (cleaning_duration, fanspeed))
     return state
 
 
@@ -75,8 +77,9 @@ while 1:
                     areas[t][-1] = int(repeat_kitchen.get_val()[0])
                 if button.get_val()[0] == "1":
                     areas_to_clean.append(areas[t])
-            result = do_robo_cmd("mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean))
-            terminal.set_val(result)
+            start_clean = do_robo_cmd("mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean))
+            set_fan = do_robo_cmd("mirobo fanspeed %s" % str(power.get_val()[0]))
+            terminal.set_val(start_clean)
             start_button.off()
             time.sleep(5)
         else:
@@ -94,6 +97,7 @@ while 1:
         terminal.set_val(do_robo_cmd("mirobo status"))
     try:
         current_status = do_robo_cmd("mirobo status")
+        print current_status
         update_app(current_status)
     except Exception, e:
         terminal.set_val(r"OMG!!!\n{}\n".format(str(e)))
