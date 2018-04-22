@@ -8,31 +8,32 @@ import re
 
 ip = "192.168.1.51"
 token = "37705464687a564e366a46486f675367"
-auth = "2261c143d6f84d42a2bce2fa0aad2cb9"
+auth = "7784a8e7e1084ae08ad587702494a124"
+server = "192.168.1.35"
 os.environ["MIROBO_IP"] = ip
 os.environ["MIROBO_TOKEN"] = token
 
-start_button = Blynk(auth, pin="V5")
-stop_button = Blynk(auth, pin="V6")
+start_button = Blynk(auth, server=server, pin="V5")
+stop_button = Blynk(auth, server=server, pin="V6")
 
-repeat_kor = Blynk(auth, pin="V9")
-power_kor = Blynk(auth, pin="V11")
+repeat_kor = Blynk(auth, server=server, pin="V9")
+power_kor = Blynk(auth, server=server, pin="V11")
 
-repeat_room1 = Blynk(auth, pin="V12")
-power_room1 = Blynk(auth, pin="V13")
+repeat_room1 = Blynk(auth, server=server, pin="V12")
+power_room1 = Blynk(auth, server=server, pin="V13")
 
-repeat_room2 = Blynk(auth, pin="V14")
-power_room2 = Blynk(auth, pin="V15")
+repeat_room2 = Blynk(auth, server=server, pin="V14")
+power_room2 = Blynk(auth, server=server, pin="V15")
 
-repeat_kitchen = Blynk(auth, pin="V16")
-power_kitchen = Blynk(auth, pin="V17")
+repeat_kitchen = Blynk(auth, server=server, pin="V16")
+power_kitchen = Blynk(auth, server=server, pin="V17")
 
-terminal = Blynk(auth, pin="V7")
+terminal = Blynk(auth, server=server, pin="V7")
 
-lcd1 = Blynk(auth, pin="V8")
-lcd2 = Blynk(auth, pin="V10")
+lcd1 = Blynk(auth, server=server, pin="V8")
+lcd2 = Blynk(auth, server=server, pin="V10")
 
-power = Blynk(auth, pin="V11")
+power = Blynk(auth, server=server, pin="V11")
 
 areas = {"V0": [21281, 24865, 24831, 26365, 1],
          "V1": [24850, 24765, 27350, 26165, 1],
@@ -66,7 +67,7 @@ while 1:
         if "Charging" in do_robo_cmd("mirobo status"):
             terminal.set_val(r'\n\nStart cleaning\n')
             for t in areas.keys():
-                button = Blynk(auth, pin=t)
+                button = Blynk(auth, server=server, pin=t)
                 if t == "V0" or t == "V1":
                     areas[t][-1] = int(repeat_kor.get_val()[0])
                 elif t == "V2":
