@@ -69,17 +69,17 @@ while 1:
             for t in areas.keys():
                 button = Blynk(auth, server=server, pin=t)
                 if t == "V0" or t == "V1":
-                    areas[t][-1] = int(repeat_kor.get_val()[0])
+                    areas[t][-1] = int(float(repeat_kor.get_val()[0]))
                 elif t == "V2":
-                    areas[t][-1] = int(repeat_room1.get_val()[0])
+                    areas[t][-1] = int(float(repeat_room1.get_val()[0]))
                 elif t == "V3":
-                    areas[t][-1] = int(repeat_room2.get_val()[0])
+                    areas[t][-1] = int(float(repeat_room2.get_val()[0]))
                 elif t == "V4":
-                    areas[t][-1] = int(repeat_kitchen.get_val()[0])
+                    areas[t][-1] = int(float(repeat_kitchen.get_val()[0]))
                 if button.get_val()[0] == "1":
                     areas_to_clean.append(areas[t])
             start_clean = do_robo_cmd("mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean))
-            set_fan = do_robo_cmd("mirobo fanspeed %s" % str(power.get_val()[0]))
+            set_fan = do_robo_cmd("mirobo fanspeed %s" % str(int(float(power.get_val()[0]))))
             terminal.set_val(start_clean)
             start_button.off()
             time.sleep(5)
