@@ -4,6 +4,7 @@ import subprocess
 import time
 from Blynk import Blynk
 import re
+import urllib
 
 
 ip = "192.168.1.51"
@@ -33,6 +34,7 @@ terminal = Blynk(auth, server=server, pin="V7")
 lcd1 = Blynk(auth, server=server, pin="V8")
 lcd2 = Blynk(auth, server=server, pin="V10")
 
+
 power = Blynk(auth, server=server, pin="V11")
 
 areas = {"V2": [21281, 24865, 24831, 26365, 1],
@@ -41,11 +43,11 @@ areas = {"V2": [21281, 24865, 24831, 26365, 1],
          "V4": [24851, 20140, 26901, 22540, 1],
          "V3": [21860, 20162, 24860, 24012, 1]}
 
-areas_named = {"V0": u"Прихожая",
-               "V1": u"Корридор",
-               "V2": u"Комната1",
-               "V3": u"Комната2",
-               "V4": u"Кухня"}
+areas_named = {"V0": "Hall",
+               "V1": "Corridor",
+               "V2": "Room1",
+               "V3": "Room2",
+               "V4": "Kitchen"}
 areas_to_clean = []
 
 
@@ -64,16 +66,22 @@ def update_app(status):
     lcd1.set_val(state)
     lcd2.set_val(battery)
     if state == "Zoned cleaning":
+        check = check_zone()
+        if check:
+            lcd1.set_val(check)
         lcd2.set_val("%s W:%s" % (cleaning_duration, fanspeed))
     return state
 
 
-def check_zone(x, y):
-    for t in areas:
-        if (areas[t][0] <= x <= areas[t][2]) and (areas[t][1] <= y <= areas[t][3]):
-            return areas_named[t]
-        else:
-            return 0
+def check_zone():
+    file = open("SLAM_fprintf.log", "r")
+    lines = file.readlines()
+    if "estimate" in lines[-1]:
+        d = lines[-1].split('estimate')[1].strip()
+        x, y, z = map(float, d.split(' '))
+        for t in areas:
+            if (areas[t][0] <= 25500 + int(x*996) <= areas[t][2]) and (areas[t][1] <= 25500 + int(y*996) <= areas[t][3]):
+                return areas_named[t]
 
 
 while 1:
