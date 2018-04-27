@@ -40,6 +40,12 @@ areas = {"V2": [21281, 24865, 24831, 26365, 1],
          "V1": [24907, 22483, 25707, 25033, 1],
          "V4": [24851, 20140, 26901, 22540, 1],
          "V3": [21860, 20162, 24860, 24012, 1]}
+
+areas_named = {"V0": u"Прихожая",
+               "V1": u"Корридор",
+               "V2": u"Комната1",
+               "V3": u"Комната2",
+               "V4": u"Кухня"}
 areas_to_clean = []
 
 
@@ -60,6 +66,14 @@ def update_app(status):
     if state == "Zoned cleaning":
         lcd2.set_val("%s W:%s" % (cleaning_duration, fanspeed))
     return state
+
+
+def check_zone(x, y):
+    for t in areas:
+        if (areas[t][0] <= x <= areas[t][2]) and (areas[t][1] <= y <= areas[t][3]):
+            return areas_named[t]
+        else:
+            return 0
 
 
 while 1:
