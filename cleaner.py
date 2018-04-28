@@ -73,7 +73,6 @@ def update_app(status):
             lcd1.set_val(check)
             power = Blynk(auth, server=server, pin=areas_powers[check])
             if fanspeed != "{} %".format(str(int(float(power.get_val()[0])))):
-                #print (check, str(int(float(power.get_val()[0]))))
                 terminal.set_val(do_robo_cmd("mirobo fanspeed %s" % str(int(float(power.get_val()[0])))))
         else:
             lcd1.set_val(state)
@@ -85,7 +84,7 @@ def update_app(status):
 
 
 def check_zone():
-    sync = do_robo_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
+    do_robo_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
     file = open("SLAM_fprintf.log", "r")
     lines = file.readlines()
     if "estimate" in lines[-1]:
