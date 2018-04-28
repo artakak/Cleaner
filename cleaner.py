@@ -34,9 +34,6 @@ terminal = Blynk(auth, server=server, pin="V7")
 lcd1 = Blynk(auth, server=server, pin="V8")
 lcd2 = Blynk(auth, server=server, pin="V10")
 
-
-power = Blynk(auth, server=server, pin="V11")
-
 areas = {"V2": [21281, 24865, 24831, 26365, 1],
          "V0": [24850, 24765, 27350, 26165, 1],
          "V1": [24907, 22483, 25707, 25033, 1],
@@ -48,6 +45,13 @@ areas_named = {"V0": "Hall",
                "V2": "Room1",
                "V3": "Room2",
                "V4": "Kitchen"}
+
+areas_powers = {"Hall": "V11",
+                "Corridor": "V11",
+                "Room1": "V13",
+                "Room2": "V15",
+                "Kitchen": "V17"}
+
 areas_to_clean = []
 
 
@@ -69,6 +73,9 @@ def update_app(status):
         check = check_zone()
         if check:
             lcd1.set_val(check)
+            power = Blynk(auth, server=server, pin=areas_named[check])
+            if fanspeed != "{} %".format(str(int(float(power.get_val()[0])))):
+                set_fan = do_robo_cmd("mirobo fanspeed %s" % str(int(float(power.get_val()[0]))))
         lcd2.set_val("%s W:%s" % (cleaning_duration, fanspeed))
     return state
 
@@ -101,7 +108,7 @@ while 1:
                 if button.get_val()[0] == "1":
                     areas_to_clean.append(areas[t])
             start_clean = do_robo_cmd("mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean))
-            set_fan = do_robo_cmd("mirobo fanspeed %s" % str(int(float(power.get_val()[0]))))
+            set_fan = do_robo_cmd("mirobo fanspeed %s" % str(int(float(power_kor.get_val()[0]))))
             terminal.set_val(start_clean)
             start_button.off()
             time.sleep(5)
