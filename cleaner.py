@@ -67,8 +67,6 @@ def update_app(status):
     battery = re.findall("Battery: (\d+ %)", status)[0]
     cleaning_duration = re.findall("Cleaning since: (\d:\d\d:\d\d)", status)[0]
     fanspeed = re.findall("Fanspeed: (\d+ %)", status)[0]
-    lcd1.set_val(state)
-    lcd2.set_val(battery)
     if state == "Zoned cleaning":
         check = check_zone()
         if check:
@@ -77,7 +75,12 @@ def update_app(status):
             if fanspeed != "{} %".format(str(int(float(power.get_val()[0])))):
                 #print (check, str(int(float(power.get_val()[0]))))
                 terminal.set_val(do_robo_cmd("mirobo fanspeed %s" % str(int(float(power.get_val()[0])))))
+        else:
+            lcd1.set_val(state)
         lcd2.set_val("%s W:%s" % (cleaning_duration, fanspeed))
+    else:
+        lcd1.set_val(state)
+        lcd2.set_val(battery)
     return state
 
 
@@ -133,5 +136,5 @@ while 1:
         update_app(current_status)
     except Exception, e:
         terminal.set_val(r"OMG!!!\n{}\n".format(str(e)))
-    time.sleep(5)
+    time.sleep(1)
 
