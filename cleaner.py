@@ -4,7 +4,6 @@ import subprocess
 import time
 from Blynk import Blynk
 import re
-import urllib
 
 
 ip = "192.168.1.51"
@@ -133,6 +132,8 @@ while 1:
         current_status = do_robo_cmd("mirobo status")
         print current_status
         update_app(current_status)
+        #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
+        #print consumables
     except Exception, e:
         terminal.set_val(r"OMG!!!\n{}\n".format(str(e)))
     time.sleep(1)
