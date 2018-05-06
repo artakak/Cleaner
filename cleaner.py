@@ -33,6 +33,11 @@ terminal = Blynk(auth, server=server, pin="V7")
 lcd1 = Blynk(auth, server=server, pin="V8")
 lcd2 = Blynk(auth, server=server, pin="V10")
 
+main_brush = Blynk(auth, server=server, pin="V18")
+side_brush = Blynk(auth, server=server, pin="V19")
+filter = Blynk(auth, server=server, pin="V20")
+sensor = Blynk(auth, server=server, pin="V21")
+
 areas = {"V2": [21281, 24865, 24831, 26365, 1],
          "V0": [24850, 24765, 27350, 26165, 1],
          "V1": [24907, 22483, 25707, 25033, 1],
@@ -132,8 +137,14 @@ while 1:
         current_status = do_robo_cmd("mirobo status")
         print current_status
         update_app(current_status)
-        #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
-        #print consumables
+        if "Charging" in current_status:
+            consumables = do_robo_cmd("/usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
+            print consumables
+            main_brush.set_val(consumables[0])
+            side_brush.set_val(consumables[1])
+            filter.set_val(consumables[2])
+            sensor.set_val(consumables[3])
+
     except Exception, e:
         terminal.set_val(r"OMG!!!\n{}\n".format(str(e)))
     time.sleep(1)
