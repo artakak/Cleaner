@@ -4,6 +4,7 @@ import subprocess
 import time
 from Blynk import Blynk
 import re
+import datetime
 
 
 ip = "192.168.1.51"
@@ -138,7 +139,8 @@ while 1:
         print current_status
         update_app(current_status)
         if "Charging" in current_status:
-            consumables = do_robo_cmd("/usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
+            consumables = do_robo_cmd("sudo /usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
+            #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
             print consumables
             main_brush.set_val(consumables[0])
             side_brush.set_val(consumables[1])
@@ -146,6 +148,6 @@ while 1:
             sensor.set_val(consumables[3])
 
     except Exception, e:
-        terminal.set_val(r"OMG!!!\n{}\n".format(str(e)))
+        terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
     time.sleep(1)
 
