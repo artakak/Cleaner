@@ -89,8 +89,8 @@ def update_app(status):
 
 
 def check_zone():
-    do_robo_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
-    file = open("SLAM_fprintf.log", "r")
+    do_robo_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/")
+    file = open("/srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/SLAM_fprintf.log", "r")
     lines = file.readlines()
     if "estimate" in lines[-1]:
         d = lines[-1].split('estimate')[1].strip()
@@ -142,12 +142,14 @@ while 1:
             consumables = do_robo_cmd("sudo /usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
             #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
             print consumables
+            #terminal.set_val("Ok")
             main_brush.set_val(consumables[0])
             side_brush.set_val(consumables[1])
             filter.set_val(consumables[2])
             sensor.set_val(consumables[3])
 
     except Exception, e:
-        terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
+        if "non-zero" not in str(e):
+            terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
     time.sleep(1)
 
