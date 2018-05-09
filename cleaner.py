@@ -138,7 +138,7 @@ while 1:
         current_status = do_robo_cmd("mirobo status")
         print current_status
         update_app(current_status)
-        if "Charging" in current_status:
+        """if "Charging" in current_status:
             consumables = do_robo_cmd("sudo /usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
             #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
             print consumables
@@ -146,10 +146,9 @@ while 1:
             main_brush.set_val(consumables[0])
             side_brush.set_val(consumables[1])
             filter.set_val(consumables[2])
-            sensor.set_val(consumables[3])
+            sensor.set_val(consumables[3])"""
 
     except Exception, e:
-        if "non-zero" not in str(e):
-            terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
+        terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
     time.sleep(1)
 
