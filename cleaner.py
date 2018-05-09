@@ -16,6 +16,7 @@ os.environ["MIROBO_TOKEN"] = token
 
 start_button = Blynk(auth, server=server, pin="V5")
 stop_button = Blynk(auth, server=server, pin="V6")
+get_cons = Blynk(auth, server=server, pin="V22")
 
 repeat_kor = Blynk(auth, server=server, pin="V9")
 power_kor = Blynk(auth, server=server, pin="V11")
@@ -138,16 +139,16 @@ while 1:
         current_status = do_robo_cmd("mirobo status")
         print current_status
         update_app(current_status)
-        """if "Charging" in current_status:
+        if get_cons.get_val()[0] == "1":
             consumables = do_robo_cmd("sudo /usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
             #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
             print consumables
-            #terminal.set_val("Ok")
             main_brush.set_val(consumables[0])
             side_brush.set_val(consumables[1])
             filter.set_val(consumables[2])
-            sensor.set_val(consumables[3])"""
-
+            sensor.set_val(consumables[3])
+            terminal.set_val(r"Consumables get")
+            get_cons.off()
     except Exception, e:
         terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
     time.sleep(1)
