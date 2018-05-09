@@ -147,7 +147,7 @@ while 1:
             side_brush.set_val(consumables[1])
             filter.set_val(consumables[2])
             sensor.set_val(consumables[3])
-            terminal.set_val(r"Consumables get")
+            terminal.set_val(r"\nConsumables get %s\n" % str(consumables))
             get_cons.off()
     except Exception, e:
         terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
