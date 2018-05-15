@@ -9,7 +9,7 @@ import json
 
 
 ip = "192.168.1.51"
-token = "37705464687a564e366a46486f675367"
+token = "716e375a32566b33585a794579724d73"
 auth = "7784a8e7e1084ae08ad587702494a124"
 server = "192.168.1.35"
 os.environ["MIROBO_IP"] = ip
@@ -83,10 +83,10 @@ states = {0: "Unknown",
 
 def do_robo_cmd(cmd, params=None):
     if params:
-        req = requests.get("http://192.168.1.51:9000/hooks/mirobo?method=%s&params=%s" % (cmd, params))
+        result = subprocess.check_output("./doit.sh %s %s" % (cmd, params), shell=True)
     else:
-        req = requests.get("http://192.168.1.51:9000/hooks/mirobo?method=%s" % cmd)
-    lines = req.text.splitlines()
+        result = subprocess.check_output("./doit.sh %s" % cmd, shell=True)
+    lines = result.splitlines()
     return json.loads(lines[-1].rstrip("\x00"))['result'][0]
 
 
