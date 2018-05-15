@@ -40,12 +40,12 @@ main_brush = Blynk(auth, server=server, pin="V18")
 side_brush = Blynk(auth, server=server, pin="V19")
 filter = Blynk(auth, server=server, pin="V20")
 sensor = Blynk(auth, server=server, pin="V21")
-
-areas = {"V2": [21281, 24865, 24831, 26365, 1],
-         "V0": [24850, 24765, 27350, 26165, 1],
-         "V1": [24907, 22483, 25707, 25033, 1],
-         "V4": [24851, 20140, 26901, 22540, 1],
-         "V3": [21860, 20162, 24860, 24012, 1]}
+#[[23169,26747,24519,29347,1],[24536,26826,26786,27876,1],[23008,23276,24608,26776,1],[25387,23864,29237,26814,1],[26775,26838,29175,28838,1]]}
+areas = {"V2": [23008, 23276, 24608, 26776, 1],
+         "V0": [23169, 26747, 24519, 29347, 1],
+         "V1": [24536, 26826, 26786, 27876, 1],
+         "V4": [26775, 26838, 29175, 28838, 1],
+         "V3": [25387, 23864, 29237, 26814, 1]}
 
 areas_named = {"V0": "Hall",
                "V1": "Corridor",
@@ -83,9 +83,9 @@ states = {0: "Unknown",
 
 def do_robo_cmd(cmd, params=None):
     if params:
-        result = subprocess.check_output("./doit.sh %s %s" % (cmd, params), shell=True)
+        result = subprocess.check_output("sudo /home/cleaner/doit.sh %s %s" % (cmd, params), shell=True)
     else:
-        result = subprocess.check_output("./doit.sh %s" % cmd, shell=True)
+        result = subprocess.check_output("sudo /home/cleaner/doit.sh %s" % cmd, shell=True)
     lines = result.splitlines()
     return json.loads(lines[-1].rstrip("\x00"))['result'][0]
 
@@ -102,7 +102,7 @@ def update_app(status):
     battery = status['battery']
     cleaning_duration = status['clean_time']
     fanspeed = status['fan_power']
-    if state == "Zone cleaning":
+    if state in ["Zone cleaning", "?"]:
         check = check_zone()
         if check:
             lcd1.set_val(check)
@@ -119,20 +119,22 @@ def update_app(status):
 
 
 def check_zone():
-    #do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/")
-    #file = open("/srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/SLAM_fprintf.log", "r")
-    do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
-    file = open("SLAM_fprintf.log", "r")
+    do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/")
+    file = open("/srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/SLAM_fprintf.log", "r")
+    #do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
+    #file = open("SLAM_fprintf.log", "r")
     lines = file.readlines()
     if "estimate" in lines[-1]:
         d = lines[-1].split('estimate')[1].strip()
         x, y, z = map(float, d.split(' '))
+        print (25500 + int(x*996), 25500 + int(y*996))
         for t in areas:
             if (areas[t][0] <= 25500 + int(x*996) <= areas[t][2]) and (areas[t][1] <= 25500 + int(y*996) <= areas[t][3]):
                 return areas_named[t]
 
 
 while 1:
+    time.sleep(1)
     try:
         current_status = do_robo_cmd("get_status")
         print current_status
@@ -181,7 +183,7 @@ while 1:
         areas_to_clean = []
     if stop_button.get_val()[0] == "1":
         try:
-            do_robo_cmd("app_stop")
+            do_robo_cmd("app_pause")
             do_robo_cmd("app_charge")
             terminal.set_val(r'\n\nGo Home\n')
         except Exception, e:
@@ -189,5 +191,4 @@ while 1:
             continue
         stop_button.off()
         time.sleep(5)
-    time.sleep(1)
 
