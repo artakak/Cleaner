@@ -3,8 +3,9 @@ import os
 import subprocess
 import time
 from Blynk import Blynk
-import re
 import datetime
+import requests
+import json
 
 
 ip = "192.168.1.51"
@@ -60,38 +61,68 @@ areas_powers = {"Hall": "V11",
 
 areas_to_clean = []
 
+states = {0: "Unknown",
+          1: "Initiating",
+          2: "Sleeping",
+          3: "Waiting",
+          4: "?",
+          5: "Cleaning",
+          6: "Returning home",
+          7: "?",
+          8: "Charging",
+          9: "Charging Error",
+          10: "Pause",
+          11: "Spot Cleaning",
+          12: "In Error",
+          13: "Shutting down",
+          14: "Updating",
+          15: "Docking",
+          17: "Zone cleaning",
+          100: "Full"}
 
-def do_robo_cmd(cmd):
+
+def do_robo_cmd(cmd, params=None):
+    if params:
+        req = requests.get("http://192.168.1.51:9000/hooks/mirobo?method=%s&params=%s" % (cmd, params))
+    else:
+        req = requests.get("http://192.168.1.51:9000/hooks/mirobo?method=%s" % cmd)
+    lines = req.text.splitlines()
+    return json.loads(lines[-1].rstrip("\x00"))['result'][0]
+
+
+def do_cmd(cmd):
     result = subprocess.check_output(cmd, shell=True)
     return result.replace("\\", r"\\").replace("\n", r"\n")
 
 
 def update_app(status):
-    if "Error" in status:
-        return r"ERROR!!!\n" + status
-    state = re.findall("State: ([\w\s]+)", status)[0]
-    battery = re.findall("Battery: (\d+ %)", status)[0]
-    cleaning_duration = re.findall("Cleaning since: (\d:\d\d:\d\d)", status)[0]
-    fanspeed = re.findall("Fanspeed: (\d+ %)", status)[0]
-    if state == "Zoned cleaning":
+    if status['state'] in [9, 12]:
+        return r"ERROR!!!\n" + str(status)
+    state = states[status['state']]
+    battery = status['battery']
+    cleaning_duration = status['clean_time']
+    fanspeed = status['fan_power']
+    if state == "Zone cleaning":
         check = check_zone()
         if check:
             lcd1.set_val(check)
             power = Blynk(auth, server=server, pin=areas_powers[check])
-            if fanspeed != "{} %".format(str(int(float(power.get_val()[0])))):
-                terminal.set_val(do_robo_cmd("mirobo fanspeed %s" % str(int(float(power.get_val()[0])))))
+            if fanspeed != int(float(power.get_val()[0])):
+                terminal.set_val(do_robo_cmd("set_custom_mode", int(float(power.get_val()[0]))))
         else:
             lcd1.set_val(state)
-        lcd2.set_val("%s W:%s" % (cleaning_duration, fanspeed))
+        lcd2.set_val("{} W:{}%".format(str(datetime.timedelta(seconds=cleaning_duration)), fanspeed))
     else:
         lcd1.set_val(state)
-        lcd2.set_val(battery)
+        lcd2.set_val(str(battery) + " %")
     return state
 
 
 def check_zone():
-    do_robo_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/")
-    file = open("/srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/SLAM_fprintf.log", "r")
+    #do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/")
+    #file = open("/srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/SLAM_fprintf.log", "r")
+    do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
+    file = open("SLAM_fprintf.log", "r")
     lines = file.readlines()
     if "estimate" in lines[-1]:
         d = lines[-1].split('estimate')[1].strip()
@@ -102,8 +133,25 @@ def check_zone():
 
 
 while 1:
+    try:
+        current_status = do_robo_cmd("get_status")
+        print current_status
+        if "ERROR" in update_app(current_status):
+            terminal.set_val(str(current_status))
+        if get_cons.get_val()[0] == "1":
+            consumables = do_robo_cmd("get_consumable")
+            print consumables
+            main_brush.set_val(str(100 - consumables['main_brush_work_time']*100/1080000))
+            """side_brush.set_val(consumables[1])
+            filter.set_val(consumables[2])
+            sensor.set_val(consumables[3])
+            terminal.set_val(r"\nConsumables get %s\n" % str(consumables))"""
+            get_cons.off()
+    except Exception, e:
+        terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
+        continue
     if start_button.get_val()[0] == "1":
-        if "Charging" in do_robo_cmd("mirobo status"):
+        if "Charging" or "Waiting" in states[current_status['state']]:
             terminal.set_val(r'\n\nStart cleaning\n')
             for t in areas.keys():
                 button = Blynk(auth, server=server, pin=t)
@@ -117,39 +165,29 @@ while 1:
                     areas[t][-1] = int(float(repeat_kitchen.get_val()[0]))
                 if button.get_val()[0] == "1":
                     areas_to_clean.append(areas[t])
-            start_clean = do_robo_cmd("mirobo raw_command app_zoned_clean '%s'" % str(areas_to_clean))
-            set_fan = do_robo_cmd("mirobo fanspeed %s" % str(int(float(power_kor.get_val()[0]))))
-            terminal.set_val(start_clean)
+            try:
+                start_clean = do_robo_cmd("app_zoned_clean", str(areas_to_clean).replace(" ", "").replace("[[", "[").replace("]]", "]"))
+                set_fan = do_robo_cmd("set_custom_mode", int(float(power_kor.get_val()[0])))
+            except Exception, e:
+                terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
+                continue
+            terminal.set_val(str(start_clean))
             start_button.off()
             time.sleep(5)
         else:
             start_button.off()
             terminal.set_val(r"\n\nCleaning denied\n")
             time.sleep(5)
-        terminal.set_val(do_robo_cmd("mirobo status"))
         areas_to_clean = []
     if stop_button.get_val()[0] == "1":
-        terminal.set_val(r'\n\nGo Home\n')
-        result = do_robo_cmd("mirobo home")
-        terminal.set_val(result)
+        try:
+            do_robo_cmd("app_stop")
+            do_robo_cmd("app_charge")
+            terminal.set_val(r'\n\nGo Home\n')
+        except Exception, e:
+            terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
+            continue
         stop_button.off()
         time.sleep(5)
-        terminal.set_val(do_robo_cmd("mirobo status"))
-    try:
-        current_status = do_robo_cmd("mirobo status")
-        print current_status
-        update_app(current_status)
-        if get_cons.get_val()[0] == "1":
-            consumables = do_robo_cmd("sudo /usr/local/bin/python3.6 /home/cleaner/raw_mirobo.py").split(r"\n")
-            #consumables = do_robo_cmd("/usr/bin/python3.5 /home/art/Документы/Cleaner/raw_mirobo.py").split(r"\n")
-            print consumables
-            main_brush.set_val(consumables[0])
-            side_brush.set_val(consumables[1])
-            filter.set_val(consumables[2])
-            sensor.set_val(consumables[3])
-            terminal.set_val(r"\nConsumables get %s\n" % str(consumables))
-            get_cons.off()
-    except Exception, e:
-        terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
     time.sleep(1)
 
