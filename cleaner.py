@@ -81,11 +81,8 @@ states = {0: "Unknown",
           100: "Full"}
 
 
-def do_robo_cmd(cmd, params=None):
-    if params:
-        result = subprocess.check_output("sudo /home/cleaner/doit.sh %s %s" % (cmd, params), shell=True)
-    else:
-        result = subprocess.check_output("sudo /home/cleaner/doit.sh %s" % cmd, shell=True)
+def do_robo_cmd(cmd, params=""):
+    result = subprocess.check_output("sudo /home/cleaner/doit.sh %s %s" % (cmd, params), shell=True)
     lines = result.splitlines()
     return json.loads(lines[-1].rstrip("\x00"))['result'][0]
 
@@ -102,7 +99,7 @@ def update_app(status):
     battery = status['battery']
     cleaning_duration = status['clean_time']
     fanspeed = status['fan_power']
-    if state in ["Zone cleaning", "?"]:
+    if state == "Zone cleaning":
         check = check_zone()
         if check:
             lcd1.set_val(check)
