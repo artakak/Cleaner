@@ -81,8 +81,11 @@ states = {0: "Unknown",
           100: "Full"}
 
 
-def do_robo_cmd(cmd, params=""):
-    result = subprocess.check_output("sudo /home/cleaner/doit.sh %s %s" % (cmd, params), shell=True)
+def do_robo_cmd(cmd, params=None):
+    if params:
+        result = subprocess.check_output("sudo /home/cleaner/doit.sh %s %s" % (cmd, params), shell=True)
+    else:
+        result = subprocess.check_output("sudo /home/cleaner/doit.sh %s" % cmd, shell=True)
     lines = result.splitlines()
     return json.loads(lines[-1].rstrip("\x00"))['result'][0]
 
@@ -105,7 +108,7 @@ def update_app(status):
             lcd1.set_val(check)
             power = Blynk(auth, server=server, pin=areas_powers[check])
             if fanspeed != int(float(power.get_val()[0])):
-                terminal.set_val(do_robo_cmd("set_custom_mode", int(float(power.get_val()[0]))))
+                do_robo_cmd("set_custom_mode", int(float(power.get_val()[0])))
         else:
             lcd1.set_val(state)
         lcd2.set_val("{} W:{}%".format(str(datetime.timedelta(seconds=cleaning_duration)), fanspeed))
