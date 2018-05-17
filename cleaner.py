@@ -119,8 +119,8 @@ def update_app(status):
 
 
 def check_zone():
-    do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/")
-    file = open("/srv/dev-disk-by-id-usb-PI-288_USB_2.0_Drive_100713000EC9-0-0-part1/SLAM_fprintf.log", "r")
+    do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log /home/cleaner")
+    file = open("/home/cleaner/SLAM_fprintf.log", "r")
     #do_cmd("rsync -avz -e ssh root@192.168.1.51:/var/run/shm/SLAM_fprintf.log .")
     #file = open("SLAM_fprintf.log", "r")
     lines = file.readlines()
