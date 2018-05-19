@@ -8,7 +8,7 @@ import math
 
 #pydevd.settrace('192.168.1.49', port=12345, stdoutToServer=True, stderrToServer=True)
 
-vacuum = miio.Vacuum(ip="192.168.1.51", token="37705464687a564e366a46486f675367")
+vacuum = miio.Vacuum(ip="192.168.1.51", token="716e375a32566b33585a794579724d73")
 cmd = vacuum.status()
 cmd2 = vacuum.consumable_status()
 #cmd3 = vacuum.clean_details(id_=cmd2.ids[0])

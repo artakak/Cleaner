@@ -144,10 +144,10 @@ while 1:
             consumables = do_robo_cmd("get_consumable")
             print consumables
             main_brush.set_val(str(100 - consumables['main_brush_work_time']*100/1080000))
-            """side_brush.set_val(consumables[1])
-            filter.set_val(consumables[2])
-            sensor.set_val(consumables[3])
-            terminal.set_val(r"\nConsumables get %s\n" % str(consumables))"""
+            side_brush.set_val(str(100 - consumables['side_brush_work_time']*100/720000))
+            filter.set_val(str(100 - consumables['filter_work_time']*100/540000))
+            sensor.set_val(str(100 - consumables['sensor_dirty_time']*100/86400))
+            terminal.set_val(r"\nConsumables get %s\n" % str(consumables))
             get_cons.off()
     except Exception, e:
         terminal.set_val(r"{} OMG!!!\n{}\n".format(str(datetime.datetime.now()), str(e)))
